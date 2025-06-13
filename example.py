@@ -45,9 +45,6 @@ class CodeWithCodeManager(Scene):
         code_manager.set_code(all_lines)
         code_manager.create_background()
 
-        code_manager.indent_line(2)
-        code_manager.indent_line(3)
-
         self.play(FadeIn(code_manager.background))
 
         self.add(code_manager.highlight)
@@ -55,16 +52,17 @@ class CodeWithCodeManager(Scene):
 
         code_manager.type_line(1)
         code_manager.type_line(4)
-        code_manager.blink_cursor(1)
+        self.wait(1.0)
+        code_manager.indent_line(3)
         code_manager.type_line(3)
-        code_manager.blink_cursor(1)
+        self.wait(0.5)
 
         code_manager.add_line(1)
 
         code_manager.resize_background()
         code_manager.refactor_code()
 
-        code_manager.blink_cursor(1)
+        self.wait(1.0)
 
         uv_line = VGroup(
             MarkupText('<span foreground="#feb43c">vec2 </span>'),
@@ -74,30 +72,49 @@ class CodeWithCodeManager(Scene):
         code_manager.indent_line(2)
         code_manager.replace_line(2, uv_line)
 
-        code_manager.add_line(100)
-        code_manager.add_line(100)
-        code_manager.add_line(100)
+        self.wait(1.0)
+
+        new_frag_line = VGroup(
+            MarkupText('fragColor = '),
+            MarkupText('<span foreground="#feb43c">vec4(</span>'),
+            MarkupText('<span foreground="#ff0022">uv.x</span>, '),
+            MarkupText('<span foreground="#00ff22">uv.y</span>, '),
+            MarkupText('<span foreground="#75ff85">0.0</span>, '),
+            MarkupText('<span foreground="#75ff85">1.0</span>'),
+            MarkupText('<span foreground="#feb43c">)</span>;')
+        )
+
+        code_manager.change_line(4, new_frag_line)
+
         code_manager.add_line(100)
         code_manager.add_line(100)
 
         code_manager.resize_background()
         code_manager.refactor_code()
 
-        new_line = VGroup(
-            MarkupText('<span foreground="#ff3377">Colored </span>'),
-            MarkupText('<span foreground="#00ff77">TEXT!</span>')
+        comment_line = VGroup(
+            MarkupText('<span foreground="#75ff85">//This is a Comment :)</span>'),
         )
 
-        code_manager.replace_line(10, new_line)
+        code_manager.replace_line(7, comment_line)
+        self.wait(1.0)
 
-        #code_manager.select_line(10)
-        #self.wait(1.0)
-        #code_manager.remove_line(10)
-        #self.wait(1.0)
+        code_manager.select_line(7)
+        self.wait(1.0)
+
+        code_manager.remove_line(6)
+        code_manager.remove_line(6)
+
+        self.wait(0.5)
+
+        code_manager.resize_background()
+        code_manager.refactor_code()
 
         self.play(code_manager.full_code.animate.to_corner(UL))
-        self.play(code_manager.full_code.animate.to_corner(DR))
+        self.play(code_manager.full_code.animate.to_corner(UR))
         self.play(code_manager.full_code.animate.center())
+
+        self.play(FadeOut(code_manager.full_code))
 
 
 
@@ -228,9 +245,6 @@ class CodeManager:
         self.cursor.move_to(self.code_lines[line_number - 1][0][0])
         self.highlight.match_y(self.cursor)
 
-    def blink_cursor(self, blink_amount):
-        self.scene.play(Blink(self.cursor, blinks = blink_amount))
-
     def type_line(self, line_number):
         self.set_cursor(line_number)
         for part in self.code_lines[line_number - 1]:
@@ -273,14 +287,15 @@ class CodeManager:
 
     def remove_line(self, line_number):
         self.scene.play(FadeOut(self.code_lines[line_number - 1], run_time = 0.01))
-        self.selection.move_to(UP * 100)
+        self.selection.set_opacity(0.0)
         self.highlight.match_y(self.cursor)
-        self.code_lines.remove(line_number - 1)
+        self.code_lines.remove(self.code_lines[line_number - 1])
+        self.set_cursor(line_number - 1)
 
     def change_line(self, line_number, content):
         self.cursor.move_to(self.code_lines[line_number - 1][0][0])
         self.highlight.match_y(self.cursor)
-        for part in self.code_lines[line_number - 1]:
+        for part in reversed(self.code_lines[line_number - 1]):
             self.scene.play(UntypeWithCursor(part, self.cursor, buff = 0.05, time_per_char = 0.05))
 
         content.arrange(RIGHT, buff = 0.1)
@@ -347,7 +362,7 @@ class CodeManager:
         self.highlight.align_to(self.background_rect, LEFT)
 
     def refactor_code(self):
-        x_coords = [m.get_x() for m in self.code_lines]
+        x_coords = [line.get_x() for line in self.code_lines]
         top_y = self.code_lines.get_top()[1]
 
         self.code_lines.arrange(DOWN, buff = 0.1)
