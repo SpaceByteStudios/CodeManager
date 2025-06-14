@@ -57,7 +57,7 @@ class CodeWithCodeManager(Scene):
         code_manager.type_line(3)
         self.wait(0.5)
 
-        code_manager.add_line(1)
+        code_manager.add_line(2)
 
         code_manager.resize_background()
         code_manager.refactor_code()
