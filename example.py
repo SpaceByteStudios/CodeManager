@@ -86,8 +86,8 @@ class CodeWithCodeManager(Scene):
 
         code_manager.change_line(4, new_frag_line)
 
-        code_manager.add_line(100)
-        code_manager.add_line(100)
+        code_manager.add_line(6)
+        code_manager.add_line(7)
 
         code_manager.resize_background()
         code_manager.refactor_code()
@@ -102,7 +102,7 @@ class CodeWithCodeManager(Scene):
         code_manager.select_line(7)
         self.wait(1.0)
 
-        code_manager.remove_line(6)
+        code_manager.remove_line(7)
         code_manager.remove_line(6)
 
         self.wait(0.5)

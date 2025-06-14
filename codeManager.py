@@ -9,7 +9,7 @@ class CodeManager:
         "fill_opacity": 1.0,
         "fill_color": "#1c2032",
     }
-
+    
     default_highlight_config: dict[str, Any] = {
         "corner_radius": 0.0,
         "stroke_width": 1.0,
@@ -37,8 +37,8 @@ class CodeManager:
             self.buttons = VGroup()
             self.code_lines = VGroup()
 
-            self.background_rect = SurroundingRectangle()
-            self.shadows = SurroundingRectangle()
+            self.background_rect = None
+            self.shadows = None
             self.background = VGroup()
             self.full_code = VGroup()
 
@@ -50,9 +50,9 @@ class CodeManager:
             self.selection_config: dict[str, Any] = self.default_selection_config.copy()
             self.selection_config.update(selection_config)
 
-            self.cursor = Rectangle()
-            self.highlight = SurroundingRectangle()
-            self.selection = SurroundingRectangle()
+            self.cursor = None
+            self.highlight = None
+            self.selection = None
 
             self.setup_manager()
     
@@ -71,7 +71,6 @@ class CodeManager:
         )
 
         self.highlight.stretch_to_fit_height(0.2)
-        self.update_highlight_width()
 
         self.selection = SurroundingRectangle(
             self.code_lines,
@@ -112,6 +111,7 @@ class CodeManager:
         self.code_lines = VGroup()
 
         for line in lines:
+            line.set_height(0.21)
             line.arrange(RIGHT, buff = 0.1)
 
             for part in line:
@@ -159,6 +159,7 @@ class CodeManager:
     def add_line(self, line_number):
         color = self.background_config["fill_color"]
         new_line = VGroup( MarkupText(f'<span foreground="{color}">i</span>') )
+        new_line.set_height(0.21)
         new_line.arrange(RIGHT, buff = 0.1)
 
         for part in new_line:
@@ -166,7 +167,10 @@ class CodeManager:
         
         new_line.align_to(self.code_lines, LEFT)
 
-        self.code_lines.insert(line_number, new_line)
+        self.code_lines.insert(line_number - 1, new_line)
+
+        for line in self.code_lines:
+            print(line.height)
 
     def remove_line(self, line_number):
         self.scene.play(FadeOut(self.code_lines[line_number - 1], run_time = 0.01))
